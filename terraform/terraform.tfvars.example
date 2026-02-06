@@ -1,0 +1,98 @@
+# =============================================================================
+# OpenClaw GCP Deployment - Example Variables
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values.
+# IMPORTANT: Never commit terraform.tfvars to version control!
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# GCP Project Configuration (REQUIRED)
+# -----------------------------------------------------------------------------
+
+project_id = "your-gcp-project-id"
+region     = "us-central1"
+zone       = "us-central1-a"
+
+# -----------------------------------------------------------------------------
+# Compute Engine Configuration
+# -----------------------------------------------------------------------------
+
+instance_name     = "openclaw-gateway"
+machine_type      = "e2-small"  # Options: e2-micro (free tier), e2-small (recommended), e2-medium
+boot_disk_size_gb = 20
+boot_disk_type    = "pd-balanced"
+
+# Set to false after initial setup to remove public IP (more secure)
+assign_public_ip = true
+
+# Enable IAP for SSH access (recommended)
+enable_iap_ssh = true
+
+# -----------------------------------------------------------------------------
+# Tailscale Configuration (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# Generate an auth key at: https://login.tailscale.com/admin/settings/keys
+# Use a reusable key if you plan to redeploy frequently
+tailscale_auth_key = "tskey-auth-xxxxx-xxxxx"
+
+# Hostname for this node in your tailnet
+tailscale_hostname = "openclaw-gcp"
+
+# ACL tags (optional) - must be defined in your Tailscale ACL policy first
+# tailscale_advertise_tags = ["tag:server"]
+
+# Tailscale Serve mode:
+# - "serve": Only accessible within your tailnet (recommended for personal use)
+# - "funnel": Publicly accessible via the internet (requires password)
+# - "off": Disable Tailscale Serve (use IAP tunnel instead)
+tailscale_serve_mode = "serve"
+
+# -----------------------------------------------------------------------------
+# OpenClaw Gateway Configuration (REQUIRED)
+# -----------------------------------------------------------------------------
+
+# Generate a secure token: openssl rand -hex 32
+openclaw_gateway_token = "your-64-character-hex-token-here"
+
+# Password for Tailscale Funnel (required if tailscale_serve_mode = "funnel")
+# openclaw_gateway_password = "your-strong-password-here"
+
+# Gateway port (default is 18789)
+openclaw_gateway_port = 18789
+
+# -----------------------------------------------------------------------------
+# Model Provider API Keys (at least one REQUIRED)
+# -----------------------------------------------------------------------------
+
+# Anthropic API key (recommended) - get from https://console.anthropic.com/
+anthropic_api_key = "sk-ant-xxxxx"
+
+# OpenAI API key (optional) - get from https://platform.openai.com/
+# openai_api_key = "sk-xxxxx"
+
+# -----------------------------------------------------------------------------
+# Messaging Channel Tokens (OPTIONAL)
+# Configure the channels you want to use
+# -----------------------------------------------------------------------------
+
+# Telegram - create a bot via @BotFather
+# telegram_bot_token = "123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
+
+# Discord - create at https://discord.com/developers/applications
+# discord_bot_token = "your-discord-bot-token"
+
+# Slack - create at https://api.slack.com/apps
+# slack_bot_token = "xoxb-xxxxx"
+# slack_app_token = "xapp-xxxxx"
+
+# -----------------------------------------------------------------------------
+# Labels (OPTIONAL)
+# -----------------------------------------------------------------------------
+
+labels = {
+  app         = "openclaw"
+  environment = "production"
+  managed_by  = "terraform"
+  owner       = "your-name"
+}

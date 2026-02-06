@@ -1,0 +1,171 @@
+# =============================================================================
+# OpenClaw GCP Deployment - Git Ignore
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Terraform
+# -----------------------------------------------------------------------------
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files (contain secrets)
+*.tfvars
+*.tfvars.json
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Lock file (include in version control for reproducibility)
+# !.terraform.lock.hcl
+
+# Terraform plan output
+*.tfplan
+
+# -----------------------------------------------------------------------------
+# Environment and Secrets
+# -----------------------------------------------------------------------------
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Keep templates
+!.env.template
+!.env.example
+
+# Secret files
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Credentials
+credentials.json
+service-account.json
+*-credentials.json
+
+# OAuth tokens
+oauth.json
+auth-profiles.json
+
+# -----------------------------------------------------------------------------
+# OpenClaw State
+# -----------------------------------------------------------------------------
+
+# OpenClaw configuration directory (contains secrets)
+.openclaw/
+
+# Session data
+sessions/
+*.jsonl
+
+# WhatsApp credentials
+credentials/whatsapp/
+
+# Browser profiles
+browser/
+
+# Sandboxes
+sandboxes/
+
+# -----------------------------------------------------------------------------
+# Editor and IDE
+# -----------------------------------------------------------------------------
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+
+# -----------------------------------------------------------------------------
+# Operating System
+# -----------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# -----------------------------------------------------------------------------
+# Node.js (if building locally)
+# -----------------------------------------------------------------------------
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build output
+dist/
+build/
+
+# Cache
+.cache/
+.npm/
+
+# -----------------------------------------------------------------------------
+# Docker
+# -----------------------------------------------------------------------------
+
+# Docker Compose override (local customizations)
+docker-compose.override.yml
+
+# -----------------------------------------------------------------------------
+# Logs
+# -----------------------------------------------------------------------------
+
+logs/
+*.log
+
+# -----------------------------------------------------------------------------
+# Temporary files
+# -----------------------------------------------------------------------------
+
+tmp/
+temp/
+*.tmp
+*.temp

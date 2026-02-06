@@ -1,0 +1,185 @@
+{
+  // ==========================================================================
+  // OpenClaw Configuration Template
+  // ==========================================================================
+  // This is a JSON5 template with comments. Copy to ~/.openclaw/openclaw.json
+  // and customize for your deployment.
+  //
+  // Documentation: https://docs.clawd.bot/gateway/configuration
+  // Security Guide: https://docs.clawd.bot/gateway/security
+  // ==========================================================================
+
+  // ---------------------------------------------------------------------------
+  // Gateway Configuration
+  // ---------------------------------------------------------------------------
+  "gateway": {
+    // Bind mode: "loopback", "lan", "tailnet", or "custom"
+    // Use "loopback" with Docker host networking + Tailscale Serve (recommended)
+    // The Docker container must use network_mode: "host" for this to work
+    "bind": "loopback",
+    
+    // Gateway port for WebSocket and HTTP
+    "port": 18789,
+    
+    // Authentication configuration
+    "auth": {
+      // Auth mode: "token" (recommended) or "password"
+      "mode": "token",
+      
+      // Generate with: openssl rand -hex 32
+      // Or set via OPENCLAW_GATEWAY_TOKEN environment variable
+      "token": "${OPENCLAW_GATEWAY_TOKEN}",
+      
+      // Allow Tailscale identity headers for authentication
+      // Set to false if you want to require explicit token/password
+      "allowTailscale": true
+    },
+    
+    // Tailscale integration
+    "tailscale": {
+      // Mode: "serve" (tailnet-only), "funnel" (public), or "off"
+      "mode": "serve",
+      
+      // Reset Tailscale serve/funnel on gateway shutdown
+      "resetOnExit": true
+    },
+    
+    // Control UI configuration
+    "controlUi": {
+      // Base path for the Control UI (default: "/")
+      "basePath": "/",
+      
+      // NEVER enable in production - only for debugging
+      "allowInsecureAuth": false
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Agent Configuration
+  // ---------------------------------------------------------------------------
+  "agent": {
+    // Default model for the agent
+    // Recommended: anthropic/claude-opus-4-5 for best prompt injection resistance
+    "model": "anthropic/claude-opus-4-5",
+    
+    // Thinking level: "off", "minimal", "low", "medium", "high", "xhigh"
+    "thinkingLevel": "medium"
+  },
+
+  // ---------------------------------------------------------------------------
+  // Agent Defaults (applies to all agents)
+  // ---------------------------------------------------------------------------
+  "agents": {
+    "defaults": {
+      // Workspace directory for agent files
+      "workspace": "~/.openclaw/workspace",
+      
+      // Sandbox configuration for tool execution
+      "sandbox": {
+        // Sandbox mode: "off", "non-main", "all"
+        // "non-main" runs sandboxed for groups/channels, host for main session
+        "mode": "non-main",
+        
+        // Scope: "agent" (per-agent), "session" (per-session), "shared"
+        "scope": "agent",
+        
+        // Workspace access in sandbox: "none", "ro" (read-only), "rw"
+        "workspaceAccess": "ro"
+      }
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Session Configuration
+  // ---------------------------------------------------------------------------
+  "session": {
+    // DM scope: "main" (all DMs share main session), "per-channel-peer" (isolated)
+    // Use "per-channel-peer" if multiple people can DM your bot
+    "dmScope": "main"
+  },
+
+  // ---------------------------------------------------------------------------
+  // Messaging Channels
+  // ---------------------------------------------------------------------------
+  "channels": {
+    // WhatsApp configuration
+    "whatsapp": {
+      // DM policy: "pairing" (recommended), "allowlist", "open", "disabled"
+      "dmPolicy": "pairing",
+      
+      // Group configuration
+      "groups": {
+        // Default settings for all groups
+        "*": {
+          // Require @mention to respond in groups
+          "requireMention": true
+        }
+      }
+    },
+    
+    // Telegram configuration
+    "telegram": {
+      // Bot token - set via TELEGRAM_BOT_TOKEN env var instead
+      // "botToken": "${TELEGRAM_BOT_TOKEN}",
+      
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      }
+    },
+    
+    // Discord configuration
+    "discord": {
+      // Bot token - set via DISCORD_BOT_TOKEN env var instead
+      // "token": "${DISCORD_BOT_TOKEN}",
+      
+      "dm": {
+        "policy": "pairing"
+      }
+    },
+    
+    // Slack configuration
+    "slack": {
+      // Tokens - set via SLACK_BOT_TOKEN and SLACK_APP_TOKEN env vars
+      
+      "dm": {
+        "policy": "pairing"
+      }
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Tools Configuration
+  // ---------------------------------------------------------------------------
+  "tools": {
+    // Elevated mode configuration (host execution bypass for sandbox)
+    "elevated": {
+      // Only allow elevated for specific sessions/users
+      "allowFrom": []
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Logging Configuration
+  // ---------------------------------------------------------------------------
+  "logging": {
+    // Redact sensitive info: "off", "tools", "all"
+    "redactSensitive": "tools",
+    
+    // Log level: "debug", "info", "warn", "error"
+    "level": "info"
+  },
+
+  // ---------------------------------------------------------------------------
+  // Discovery Configuration
+  // ---------------------------------------------------------------------------
+  "discovery": {
+    // mDNS/Bonjour discovery
+    "mdns": {
+      // Mode: "minimal" (recommended), "full", "off"
+      // "minimal" hides sensitive info like CLI path and SSH port
+      "mode": "minimal"
+    }
+  }
+}

@@ -1,0 +1,157 @@
+# =============================================================================
+# OpenClaw Docker Compose Configuration
+# =============================================================================
+# Production-ready Docker Compose for OpenClaw Gateway on GCP.
+#
+# Usage:
+#   1. Copy .env.template to .env and configure
+#   2. docker compose build
+#   3. docker compose up -d
+#
+# Documentation: https://docs.clawd.bot/install/docker
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # OpenClaw Gateway
+  # ---------------------------------------------------------------------------
+  openclaw-gateway:
+    image: ${OPENCLAW_IMAGE:-openclaw:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openclaw-gateway
+    restart: unless-stopped
+    
+    # Environment file
+    env_file:
+      - .env
+    
+    # Environment variables (override .env if needed)
+    environment:
+      - HOME=/home/node
+      - NODE_ENV=production
+      - TERM=xterm-256color
+      - OPENCLAW_GATEWAY_BIND=${OPENCLAW_GATEWAY_BIND:-loopback}
+      - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT:-18789}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - GOG_KEYRING_PASSWORD=${GOG_KEYRING_PASSWORD}
+      - XDG_CONFIG_HOME=/home/node/.openclaw
+      - PATH=/home/linuxbrew/.linuxbrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    
+    # Persistent volumes
+    volumes:
+      # OpenClaw configuration and state
+      - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw
+      
+      # Agent workspace (can be separate for backup purposes)
+      - ${OPENCLAW_WORKSPACE_DIR:-~/.openclaw/workspace}:/home/node/.openclaw/workspace
+      
+      # Temporary files
+      - /tmp/openclaw:/tmp/openclaw
+    
+    # Port mapping
+    # Only expose to localhost - Tailscale handles external access
+    ports:
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+    
+    # Command to start the gateway
+    command:
+      - node
+      - dist/index.js
+      - gateway
+      - --bind
+      - "${OPENCLAW_GATEWAY_BIND:-loopback}"
+      - --port
+      - "${OPENCLAW_GATEWAY_PORT:-18789}"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    
+    # Resource limits (adjust based on your VM size)
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 512M
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Run as non-root user
+    user: "1000:1000"
+
+  # ---------------------------------------------------------------------------
+  # Browser Control (Optional)
+  # ---------------------------------------------------------------------------
+  # Uncomment this section if you need browser automation
+  # 
+  # openclaw-browser:
+  #   image: ${OPENCLAW_IMAGE:-openclaw:latest}
+  #   container_name: openclaw-browser
+  #   restart: unless-stopped
+  #   
+  #   env_file:
+  #     - .env
+  #   
+  #   environment:
+  #     - DISPLAY=:99
+  #   
+  #   volumes:
+  #     - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw:ro
+  #     - browser-data:/home/node/.openclaw/browser
+  #   
+  #   command:
+  #     - node
+  #     - dist/index.js
+  #     - browser
+  #     - --headless
+  #   
+  #   # Needs more resources for browser
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 2G
+  #       reservations:
+  #         memory: 1G
+  #   
+  #   depends_on:
+  #     - openclaw-gateway
+
+# =============================================================================
+# Volumes
+# =============================================================================
+
+volumes:
+  # Named volumes for better Docker management
+  openclaw-config:
+    driver: local
+  
+  openclaw-workspace:
+    driver: local
+  
+  # browser-data:
+  #   driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+
+networks:
+  default:
+    name: openclaw-network
+    driver: bridge
