@@ -63,7 +63,8 @@ RUN apt-get update && apt-get install -y \
 # ---------------------------------------------------------------------------
 
 RUN pip3 install playwright --break-system-packages \
-    && playwright install chromium
+    && playwright install chromium \
+    && playwright install-deps chromium
 
 # ---------------------------------------------------------------------------
 # Install External Binaries for Skills
