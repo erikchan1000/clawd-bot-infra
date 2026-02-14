@@ -96,77 +96,49 @@ services:
     user: "1000:1000"
 
   # ---------------------------------------------------------------------------
-  # Browserless Chrome (CDP Access)
+  # Full Ubuntu Desktop with Chrome
   # ---------------------------------------------------------------------------
+  # Ubuntu MATE desktop environment with Chrome browser
+  # Accessible via noVNC web interface on port 3000
   openclaw-browser:
-    image: browserless/chrome:latest
+    image: lscr.io/linuxserver/webtop:ubuntu-mate
     container_name: openclaw-browser
     restart: unless-stopped
     
     environment:
-      - DEBUG=browserless:*
-      - MAX_CONCURRENT_SESSIONS=5
-      - CONNECTION_TIMEOUT=30000
-      - MAX_QUEUE_LENGTH=10
-      - PREBOOT_CHROME=true
-      - DEMO_MODE=false
-      - HOST=0.0.0.0
-      - PORT=3000
-      - TOKEN=${BROWSERLESS_TOKEN:-}
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      # Screen resolution
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1080
     
     ports:
+      # noVNC web interface
       - "127.0.0.1:3000:3000"
+    
+    volumes:
+      - browser-data:/config
+    
+    shm_size: 2gb
     
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 4G
         reservations:
-          memory: 1G
+          memory: 2G
     
-    depends_on:
-      - openclaw-gateway
-
-  # ---------------------------------------------------------------------------
-  # noVNC Web Viewer (Optional)
-  # ---------------------------------------------------------------------------
-  novnc:
-    image: theasp/novnc:latest
-    container_name: openclaw-novnc
-    restart: unless-stopped
-    
-    environment:
-      - DISPLAY_WIDTH=1280
-      - DISPLAY_HEIGHT=720
-      - VNC_HOST=openclaw-browser
-      - VNC_PORT=3000
-    
-    ports:
-      - "127.0.0.1:8080:8080"
-    
-    depends_on:
-      - openclaw-browser
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 # =============================================================================
 # Volumes
 # =============================================================================
 
 volumes:
-  # Named volumes for better Docker management
-  openclaw-config:
+  browser-data:
     driver: local
-  
-  openclaw-workspace:
-    driver: local
-  
-  # browser-data:
-  #   driver: local
-
-# =============================================================================
-# Networks
-# =============================================================================
-
-networks:
-  default:
-    name: openclaw-network
-    driver: bridge

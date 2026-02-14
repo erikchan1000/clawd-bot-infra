@@ -231,7 +231,8 @@ cat > "$OPENCLAW_STATE_DIR/openclaw.json" << EOF
       "mode": "token",
       "token": "$OPENCLAW_GATEWAY_TOKEN",
       "allowTailscale": true
-    }
+    },
+    "trustedProxies": ["127.0.0.1", "::1"]
   },
   "agents": {
     "defaults": {
@@ -240,6 +241,18 @@ cat > "$OPENCLAW_STATE_DIR/openclaw.json" << EOF
       },
       "sandbox": {
         "mode": "non-main"
+      }
+    }
+  },
+  "browser": {
+    "enabled": true,
+    "defaultProfile": "browserless",
+    "remoteCdpTimeoutMs": 5000,
+    "remoteCdpHandshakeTimeoutMs": 10000,
+    "profiles": {
+      "browserless": {
+        "cdpUrl": "http://127.0.0.1:3000",
+        "color": "#00AA00"
       }
     }
   },
@@ -319,16 +332,23 @@ if [ "$TAILSCALE_SERVE_MODE" != "off" ]; then
     sleep 5
     
     if [ "$TAILSCALE_SERVE_MODE" = "serve" ]; then
+        # Main gateway on root path
         tailscale serve --bg http://127.0.0.1:$OPENCLAW_GATEWAY_PORT
-        # Expose browser CDP via Tailscale
+        
+        # Browser viewer on /browser path (browserless debugger)
         tailscale serve --bg --set-path /browser http://127.0.0.1:3000
-        # Expose VNC viewer via Tailscale (optional)
-        tailscale serve --bg --set-path /vnc http://127.0.0.1:8080
+        
+        # VNC viewer on /vnc path (if noVNC is running)
+        tailscale serve --bg --set-path /vnc http://127.0.0.1:6080
+        
     elif [ "$TAILSCALE_SERVE_MODE" = "funnel" ]; then
         tailscale funnel --bg http://127.0.0.1:$OPENCLAW_GATEWAY_PORT
     fi
     
     log "Tailscale $TAILSCALE_SERVE_MODE configured. Access via:"
+    log "  Gateway: https://$TAILSCALE_HOSTNAME.<tailnet>.ts.net/"
+    log "  Browser: https://$TAILSCALE_HOSTNAME.<tailnet>.ts.net/browser/"
+    log "  VNC:     https://$TAILSCALE_HOSTNAME.<tailnet>.ts.net/vnc/"
     tailscale status
 fi
 
@@ -375,8 +395,10 @@ log "Docker Status:"
 docker compose -f "$OPENCLAW_DIR/docker-compose.yml" -f "$OPENCLAW_DIR/docker-compose.override.yml" ps
 log ""
 log "Access Methods:"
-log "  1. Via Tailscale: https://$TAILSCALE_HOSTNAME.<your-tailnet>.ts.net/"
-log "  2. Via IAP Tunnel: gcloud compute start-iap-tunnel $(hostname) $OPENCLAW_GATEWAY_PORT --local-host-port=localhost:$OPENCLAW_GATEWAY_PORT"
+log "  1. Gateway:  https://$TAILSCALE_HOSTNAME.<your-tailnet>.ts.net/"
+log "  2. Browser:  https://$TAILSCALE_HOSTNAME.<your-tailnet>.ts.net/browser/"
+log "  3. VNC:      https://$TAILSCALE_HOSTNAME.<your-tailnet>.ts.net/vnc/"
+log "  4. IAP SSH:  gcloud compute start-iap-tunnel $(hostname) $OPENCLAW_GATEWAY_PORT --local-host-port=localhost:$OPENCLAW_GATEWAY_PORT"
 log ""
 log "Logs: /var/log/openclaw-startup.log"
 log "=========================================="
