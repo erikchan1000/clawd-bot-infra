@@ -96,13 +96,14 @@ services:
     user: "1000:1000"
 
   # ---------------------------------------------------------------------------
-  # Full Ubuntu Desktop with Chrome
+  # Full Ubuntu Desktop with Chrome (OpenClaw has full access)
   # ---------------------------------------------------------------------------
   # Ubuntu MATE desktop environment with Chrome browser
   # Accessible via noVNC web interface on port 3000
-  openclaw-browser:
+  # OpenClaw can control browser + run shell commands
+  openclaw-desktop:
     image: lscr.io/linuxserver/webtop:ubuntu-mate
-    container_name: openclaw-browser
+    container_name: openclaw-desktop
     restart: unless-stopped
     
     environment:
@@ -112,15 +113,27 @@ services:
       # Screen resolution
       - SCREEN_WIDTH=1920
       - SCREEN_HEIGHT=1080
+      # OpenClaw gateway connection (for node host inside container)
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
     
     ports:
-      # noVNC web interface
+      # noVNC web interface (interactive viewing)
       - "127.0.0.1:3000:3000"
+      # Chrome DevTools Protocol (for browser automation)
+      - "127.0.0.1:9222:9222"
     
     volumes:
-      - browser-data:/config
+      # Persistent config
+      - desktop-data:/config
+      # Shared workspace with OpenClaw gateway
+      - ${OPENCLAW_WORKSPACE_DIR:-~/.openclaw/workspace}:/config/workspace
+      # Docker socket for container access (optional)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     
     shm_size: 2gb
+    
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     
     deploy:
       resources:
@@ -140,5 +153,5 @@ services:
 # =============================================================================
 
 volumes:
-  browser-data:
+  desktop-data:
     driver: local
