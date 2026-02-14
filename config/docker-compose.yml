@@ -1,14 +1,5 @@
 # =============================================================================
-# OpenClaw Docker Compose Configuration
-# =============================================================================
-# Production-ready Docker Compose for OpenClaw Gateway on GCP.
-#
-# Usage:
-#   1. Copy .env.template to .env and configure
-#   2. docker compose build
-#   3. docker compose up -d
-#
-# Documentation: https://docs.clawd.bot/install/docker
+# OpenClaw Docker Compose Configuration - Ubuntu Desktop with Chrome
 # =============================================================================
 
 services:
@@ -23,11 +14,9 @@ services:
     container_name: openclaw-gateway
     restart: unless-stopped
     
-    # Environment file
     env_file:
       - .env
     
-    # Environment variables (override .env if needed)
     environment:
       - HOME=/home/node
       - NODE_ENV=production
@@ -37,25 +26,16 @@ services:
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
       - GOG_KEYRING_PASSWORD=${GOG_KEYRING_PASSWORD}
       - XDG_CONFIG_HOME=/home/node/.openclaw
-      - PATH=/home/linuxbrew/.linuxbrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     
-    # Persistent volumes
     volumes:
-      # OpenClaw configuration and state
       - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw
-      
-      # Agent workspace (can be separate for backup purposes)
       - ${OPENCLAW_WORKSPACE_DIR:-~/.openclaw/workspace}:/home/node/.openclaw/workspace
-      
-      # Temporary files
       - /tmp/openclaw:/tmp/openclaw
+      - /var/run/docker.sock:/var/run/docker.sock
     
-    # Port mapping
-    # Only expose to localhost - Tailscale handles external access
     ports:
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
     
-    # Command to start the gateway
     command:
       - node
       - dist/index.js
@@ -65,7 +45,6 @@ services:
       - --port
       - "${OPENCLAW_GATEWAY_PORT:-18789}"
     
-    # Health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
       interval: 30s
@@ -73,14 +52,12 @@ services:
       retries: 3
       start_period: 60s
     
-    # Logging configuration
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "5"
     
-    # Resource limits (adjust based on your VM size)
     deploy:
       resources:
         limits:
@@ -88,18 +65,14 @@ services:
         reservations:
           memory: 512M
     
-    # Security options
     security_opt:
       - no-new-privileges:true
     
-    # Run as non-root user
     user: "1000:1000"
 
   # ---------------------------------------------------------------------------
   # Full Ubuntu Desktop with Chrome
   # ---------------------------------------------------------------------------
-  # Ubuntu MATE desktop environment with Chrome browser
-  # Accessible via noVNC web interface on port 3000
   openclaw-browser:
     image: lscr.io/linuxserver/webtop:ubuntu-mate
     container_name: openclaw-browser
@@ -109,12 +82,10 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Los_Angeles
-      # Screen resolution
       - SCREEN_WIDTH=1920
       - SCREEN_HEIGHT=1080
     
     ports:
-      # noVNC web interface
       - "127.0.0.1:3000:3000"
     
     volumes:
