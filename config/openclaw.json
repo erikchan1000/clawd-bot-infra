@@ -108,8 +108,7 @@
   "tools": {
     "web": {
       "search": {
-        "enabled": true,
-        "apiKey": "${BRAVE_API_KEY}"
+        "enabled": false
       },
       "fetch": {
         "enabled": true
@@ -151,16 +150,21 @@
     "auth": {
       "mode": "token",
       "token": "${OPENCLAW_GATEWAY_TOKEN}",
-      "password": "${OPENCLAW_GATEWAY_PASSWORD}",
       "allowTailscale": true
     },
     "trustedProxies": ["127.0.0.1", "::1", "100.64.0.0/10"]
   },
   "browser": {
     "enabled": true,
-    "url": "http://127.0.0.1:3000",
-    "token": "${BROWSERLESS_TOKEN}",
-    "timeout": 60000
+    "defaultProfile": "kasm",
+    "remoteCdpTimeoutMs": 5000,
+    "remoteCdpHandshakeTimeoutMs": 10000,
+    "profiles": {
+      "kasm": {
+        "cdpUrl": "http://127.0.0.1:9222",
+        "color": "#00AA00"
+      }
+    }
   },
   "plugins": {
     "entries": {
