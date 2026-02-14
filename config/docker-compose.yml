@@ -101,9 +101,9 @@ services:
   # Ubuntu MATE desktop environment with Chrome browser
   # Accessible via noVNC web interface on port 3000
   # OpenClaw can control browser + run shell commands
-  openclaw-desktop:
+  openclaw-browser:
     image: lscr.io/linuxserver/webtop:ubuntu-mate
-    container_name: openclaw-desktop
+    container_name: openclaw-browser
     restart: unless-stopped
     
     environment:
