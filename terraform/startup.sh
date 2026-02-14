@@ -320,6 +320,10 @@ if [ "$TAILSCALE_SERVE_MODE" != "off" ]; then
     
     if [ "$TAILSCALE_SERVE_MODE" = "serve" ]; then
         tailscale serve --bg http://127.0.0.1:$OPENCLAW_GATEWAY_PORT
+        # Expose browser CDP via Tailscale
+        tailscale serve --bg --set-path /browser http://127.0.0.1:3000
+        # Expose VNC viewer via Tailscale (optional)
+        tailscale serve --bg --set-path /vnc http://127.0.0.1:8080
     elif [ "$TAILSCALE_SERVE_MODE" = "funnel" ]; then
         tailscale funnel --bg http://127.0.0.1:$OPENCLAW_GATEWAY_PORT
     fi

@@ -96,41 +96,56 @@ services:
     user: "1000:1000"
 
   # ---------------------------------------------------------------------------
-  # Browser Control (Optional)
+  # Browserless Chrome (CDP Access)
   # ---------------------------------------------------------------------------
-  # Uncomment this section if you need browser automation
-  # 
-  # openclaw-browser:
-  #   image: ${OPENCLAW_IMAGE:-openclaw:latest}
-  #   container_name: openclaw-browser
-  #   restart: unless-stopped
-  #   
-  #   env_file:
-  #     - .env
-  #   
-  #   environment:
-  #     - DISPLAY=:99
-  #   
-  #   volumes:
-  #     - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw:ro
-  #     - browser-data:/home/node/.openclaw/browser
-  #   
-  #   command:
-  #     - node
-  #     - dist/index.js
-  #     - browser
-  #     - --headless
-  #   
-  #   # Needs more resources for browser
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 2G
-  #       reservations:
-  #         memory: 1G
-  #   
-  #   depends_on:
-  #     - openclaw-gateway
+  openclaw-browser:
+    image: browserless/chrome:latest
+    container_name: openclaw-browser
+    restart: unless-stopped
+    
+    environment:
+      - DEBUG=browserless:*
+      - MAX_CONCURRENT_SESSIONS=5
+      - CONNECTION_TIMEOUT=30000
+      - MAX_QUEUE_LENGTH=10
+      - PREBOOT_CHROME=true
+      - DEMO_MODE=false
+      - HOST=0.0.0.0
+      - PORT=3000
+      - TOKEN=${BROWSERLESS_TOKEN:-}
+    
+    ports:
+      - "127.0.0.1:3000:3000"
+    
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    
+    depends_on:
+      - openclaw-gateway
+
+  # ---------------------------------------------------------------------------
+  # noVNC Web Viewer (Optional)
+  # ---------------------------------------------------------------------------
+  novnc:
+    image: theasp/novnc:latest
+    container_name: openclaw-novnc
+    restart: unless-stopped
+    
+    environment:
+      - DISPLAY_WIDTH=1280
+      - DISPLAY_HEIGHT=720
+      - VNC_HOST=openclaw-browser
+      - VNC_PORT=3000
+    
+    ports:
+      - "127.0.0.1:8080:8080"
+    
+    depends_on:
+      - openclaw-browser
 
 # =============================================================================
 # Volumes
