@@ -96,41 +96,82 @@ services:
     user: "1000:1000"
 
   # ---------------------------------------------------------------------------
-  # Browser Control (Optional)
+  # Browser with VNC Viewer (Puppeteer/Playwright)
   # ---------------------------------------------------------------------------
-  # Uncomment this section if you need browser automation
-  # 
-  # openclaw-browser:
-  #   image: ${OPENCLAW_IMAGE:-openclaw:latest}
-  #   container_name: openclaw-browser
-  #   restart: unless-stopped
-  #   
-  #   env_file:
-  #     - .env
-  #   
-  #   environment:
-  #     - DISPLAY=:99
-  #   
-  #   volumes:
-  #     - ${OPENCLAW_CONFIG_DIR:-~/.openclaw}:/home/node/.openclaw:ro
-  #     - browser-data:/home/node/.openclaw/browser
-  #   
-  #   command:
-  #     - node
-  #     - dist/index.js
-  #     - browser
-  #     - --headless
-  #   
-  #   # Needs more resources for browser
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 2G
-  #       reservations:
-  #         memory: 1G
-  #   
-  #   depends_on:
-  #     - openclaw-gateway
+  # Chrome browser with noVNC for remote viewing via Tailscale
+  openclaw-browser:
+    image: browserless/chrome:latest
+    container_name: openclaw-browser
+    restart: unless-stopped
+    
+    environment:
+      # Enable live debugging
+      - ENABLE_DEBUGGER=true
+      # Connection timeout (ms)
+      - CONNECTION_TIMEOUT=600000
+      # Max concurrent sessions
+      - MAX_CONCURRENT_SESSIONS=2
+      # Enable VNC for viewing
+      - ENABLE_XVFB=true
+      # Screen resolution
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1080
+      - SCREEN_DEPTH=24
+      # Token for API access (optional)
+      - TOKEN=${BROWSERLESS_TOKEN:-}
+    
+    ports:
+      # Chrome DevTools Protocol
+      - "127.0.0.1:3000:3000"
+      # VNC viewer (optional, if using browserless with VNC)
+      - "127.0.0.1:3001:3001"
+    
+    volumes:
+      - browser-data:/tmp/browserless-data
+    
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # noVNC Web Viewer (Optional - for visual browser access)
+  # ---------------------------------------------------------------------------
+  novnc:
+    image: theasp/novnc:latest
+    container_name: openclaw-novnc
+    restart: unless-stopped
+    
+    environment:
+      - DISPLAY_WIDTH=1920
+      - DISPLAY_HEIGHT=1080
+      - RUN_XTERM=no
+    
+    ports:
+      - "127.0.0.1:6080:8080"
+    
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
 
 # =============================================================================
 # Volumes
@@ -144,8 +185,8 @@ volumes:
   openclaw-workspace:
     driver: local
   
-  # browser-data:
-  #   driver: local
+  browser-data:
+    driver: local
 
 # =============================================================================
 # Networks

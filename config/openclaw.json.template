@@ -99,6 +99,30 @@
   },
 
   // ---------------------------------------------------------------------------
+  // Browser Configuration (Puppeteer/Playwright)
+  // ---------------------------------------------------------------------------
+  "browser": {
+    // Enable browser control
+    "enabled": true,
+    
+    // Connect to browserless container via CDP
+    "defaultProfile": "browserless",
+    
+    // Timeout for remote CDP connections
+    "remoteCdpTimeoutMs": 5000,
+    "remoteCdpHandshakeTimeoutMs": 10000,
+    
+    // Browser profiles
+    "profiles": {
+      "browserless": {
+        // CDP URL pointing to the browserless container
+        "cdpUrl": "http://openclaw-browser:3000",
+        "color": "#00AA00"
+      }
+    }
+  },
+
+  // ---------------------------------------------------------------------------
   // Messaging Channels
   // ---------------------------------------------------------------------------
   "channels": {
