@@ -49,6 +49,9 @@ services:
       
       # Temporary files
       - /tmp/openclaw:/tmp/openclaw
+      
+      # Docker socket (for docker exec into openclaw-browser)
+      - /var/run/docker.sock:/var/run/docker.sock
     
     # Port mapping
     # Only expose to localhost - Tailscale handles external access
